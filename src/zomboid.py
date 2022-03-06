@@ -15,6 +15,7 @@ GAME_MODES = {
     'b': 'Builder',
     'c': 'Sandbox'
 }
+PATH_ERROR = 'Invalid path for save. Please either specify (-t -n) or enter folder (cd)'
 STORE_TRUE = 'store_true'
 
 
@@ -36,7 +37,7 @@ class Save:
         cwd = Path(getcwd())
         if cwd.is_relative_to(GAME_FILES) and exists(cwd / FILE_EXIST):
             return Save(*cwd.parts[-2:])
-        raise ValueError('Invalid path')
+        raise ValueError(PATH_ERROR)
 
     def __repr__(self):
         return f'{self.type}, {self.name}'
@@ -51,11 +52,13 @@ class Save:
 
     def backup(self, name: str):
         zip_name = name if present(name) else datetime.now().strftime(BACKUP_FORMAT)
-        zip_path = GAME_FILES / 'backups' / self.type / self.name / zip_name
+        zip_path = self.backups / zip_name
+        print('Creating backup:', self, zip_name)
         make_archive(str(zip_path), 'zip', self.dir)
 
     def restore(self, name: str):
-        zip_path = self.backups / name if present(name) else max(glob(str(self.backups / '*.zip')), key=getctime)
+        zip_path = self.backups / name if present(name) else Path(max(glob(str(self.backups / '*.zip')), key=getctime))
+        print('Restoring from:', self, zip_path.name)
         unpack_archive(zip_path, self.dir)
 
     def process(self, args):
@@ -106,7 +109,6 @@ def main():
                 save = Save(GAME_MODES[args.type], args.name)
             else:
                 save = Save.from_cwd()
-            print(save)
             save.process(args)
         except ValueError as ve:
             print(ve)
