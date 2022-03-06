@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
 from os import getcwd
-from os.path import getctime
+from os.path import getctime, exists
 from pathlib import Path
 from shutil import make_archive, unpack_archive
 
 BACKUP_FORMAT = '%Y-%m-%d-%H-%M'
+FILE_EXIST = 'InGameMap.ini'
 GAME_FILES = Path.home() / 'Zomboid'
 GAME_MODES = {
     'a': 'Apocalypse',
@@ -33,7 +34,7 @@ class Save:
         :return: Derive from current working directory
         """
         cwd = Path(getcwd())
-        if cwd.is_relative_to(GAME_FILES):
+        if cwd.is_relative_to(GAME_FILES) and exists(cwd / FILE_EXIST):
             return Save(*cwd.parts[-2:])
         raise ValueError('Invalid path')
 
@@ -101,7 +102,7 @@ def main():
         list_backups()
     else:
         try:
-            if args.name:
+            if present(args.name):
                 save = Save(GAME_MODES[args.type], args.name)
             else:
                 save = Save.from_cwd()
