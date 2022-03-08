@@ -1,6 +1,18 @@
 @echo off
+where python>nul || goto missing_python
 path %~dp0src;%path%
 pushd %userprofile%\Zomboid\Saves
 prompt ~\Zomboid$+$g
+if not exist %~dp0venv call :missing_venv
 cls
-%~dp0venv\Scripts\activate 2>nul
+call %~dp0venv\Scripts\activate
+exit/b
+:missing_venv
+pushd %~dp0
+python -m venv venv
+call venv\Scripts\activate
+pip install -r requirements.txt
+popd
+exit/b
+:missing_python
+echo Please install Python 3

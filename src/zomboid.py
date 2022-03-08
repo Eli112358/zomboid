@@ -6,6 +6,8 @@ from os.path import getctime, exists
 from pathlib import Path
 from shutil import make_archive, unpack_archive
 
+from send2trash import send2trash
+
 BACKUP_FORMAT = '%Y-%m-%d-%H-%M'
 FILE_EXIST = 'InGameMap.ini'
 GAME_FILES = Path.home() / 'Zomboid'
@@ -61,11 +63,23 @@ class Save:
         print('Restoring from:', zip_path.name, 'for', self)
         unpack_archive(zip_path, self.dir)
 
+    def clean(self, count: int):
+        print(f'Cleaning oldest backups:', count, 'from', self)
+        files = sorted(glob(str(self.backups / '*.zip')), key=getctime)
+        if count >= len(files):
+            count = len(files) - 1
+        files = files[:count]
+        for file in files:
+            print(Path(file).name)
+            send2trash(file)
+
     def process(self, args):
         if args.backup:
             self.backup(args.backup)
         elif args.restore:
             self.restore(args.restore)
+        elif args.clean:
+            self.clean(args.clean)
 
 
 def get_args():
@@ -89,6 +103,8 @@ def get_args():
                      help='Restore from a backup, default is the most recent')
     cmd.add_argument('-l', '--list', action=STORE_TRUE,
                      help='List available backups, the default action')
+    cmd.add_argument('-c', '--clean', nargs='?', const=1, type=int,
+                     help='Clean up oldest backups, default is 1')
     return parser.parse_args(argv[1:])
 
 
