@@ -83,9 +83,9 @@ def get_args():
     parser.add_argument('-n', '--name', default='',
                         help='Name of save game, required unless ran from within save game folder')
     cmd = parser.add_mutually_exclusive_group()
-    cmd.add_argument('-b', '--backup', default='', nargs='?', const=True,
+    cmd.add_argument('-b', '--backup', nargs='?', const=True,
                      help='Save a backup, default name is the current date-time')
-    cmd.add_argument('-r', '--restore', default='', nargs='?', const=True,
+    cmd.add_argument('-r', '--restore', nargs='?', const=True,
                      help='Restore from a backup, default is the most recent')
     cmd.add_argument('-l', '--list', action=STORE_TRUE,
                      help='List available backups, the default action')
