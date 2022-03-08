@@ -53,12 +53,12 @@ class Save:
     def backup(self, name: str):
         zip_name = name if present(name) else datetime.now().strftime(BACKUP_FORMAT)
         zip_path = self.backups / zip_name
-        print('Creating backup:', self, zip_name)
+        print('Creating backup:', zip_name, 'for', self)
         make_archive(str(zip_path), 'zip', self.dir)
 
     def restore(self, name: str):
         zip_path = self.backups / name if present(name) else Path(max(glob(str(self.backups / '*.zip')), key=getctime))
-        print('Restoring from:', self, zip_path.name)
+        print('Restoring from:', zip_path.name, 'for', self)
         unpack_archive(zip_path, self.dir)
 
     def process(self, args):
