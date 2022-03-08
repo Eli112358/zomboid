@@ -1,9 +1,9 @@
 @echo off
 where python>nul || goto missing_python
+if not exist %~dp0venv call :missing_venv
 path %~dp0src;%path%
 pushd %userprofile%\Zomboid\Saves
 prompt ~\Zomboid$+$g
-if not exist %~dp0venv call :missing_venv
 cls
 call %~dp0venv\Scripts\activate
 exit/b
