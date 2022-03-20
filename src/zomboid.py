@@ -45,10 +45,10 @@ def get_args():
     cmd.add_argument('-r', '--restore', nargs='?', const=True,
                      help='Restore from a backup, default is the most recent')
     cmd.add_argument('-l', '--list', action=STORE_TRUE,
-                     help='List available backups, the default action')
+                     help='List available backups')
     cmd.add_argument('-c', '--clean', nargs='?', const=1, type=int,
                      help='Clean up oldest backups, default is 1')
-    return parser.parse_args(argv[1:])
+    return parser, parser.parse_args(argv[1:])
 
 
 @dataclass
@@ -99,13 +99,15 @@ class Save:
             print(Path(file).name)
             send2trash(file)
 
-    def process(self, args):
+    def process(self, parser, args):
         if args.backup:
             self.backup(args.backup)
         elif args.restore:
             self.restore(args.restore)
         elif args.clean:
             self.clean(args.clean)
+        else:
+            parser.print_usage()
 
 
 def list_backups():
@@ -116,7 +118,7 @@ def list_backups():
 
 
 def main():
-    args = get_args()
+    parser, args = get_args()
     if args.list:
         list_backups()
     else:
@@ -125,7 +127,7 @@ def main():
                 save = Save(GAME_MODES[args.type], args.name)
             else:
                 save = Save.from_cwd()
-            save.process(args)
+            save.process(parser, args)
         except ValueError as ve:
             print(ve)
 
