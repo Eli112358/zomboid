@@ -1,3 +1,4 @@
+from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
@@ -5,6 +6,7 @@ from os import getcwd
 from os.path import getctime, exists
 from pathlib import Path
 from shutil import make_archive, unpack_archive
+from sys import argv
 
 from send2trash import send2trash
 
@@ -21,18 +23,16 @@ PATH_ERROR = 'Invalid path for save. Please either specify (-t -n) or enter fold
 STORE_TRUE = 'store_true'
 
 
-def present(name):
+def present(name: str) -> bool:
     return type(name) is str and name != ''
 
 
-def get_args():
+def get_args() -> tuple[ArgumentParser, Namespace]:
     """
     Set up an ArgumentParser and use it on sys.argv
 
     :return: Parsed args
     """
-    from argparse import ArgumentParser
-    from sys import argv
 
     parser = ArgumentParser(description='Manage backups for Project Zomboid')
     parser.add_argument('-t', '--type', choices=GAME_MODES.keys(), default=list(GAME_MODES.keys())[-1],
@@ -57,7 +57,7 @@ class Save:
     name: str
 
     @classmethod
-    def from_cwd(cls):
+    def from_cwd(cls) -> "Save":
         """
         Raises `ValueError` if not in a directory relative to game files
         :return: Derive from current working directory
@@ -67,7 +67,7 @@ class Save:
             return Save(*cwd.parts[-2:])
         raise ValueError(PATH_ERROR)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.type}, {self.name}'
 
     @property
@@ -99,7 +99,7 @@ class Save:
             print(Path(file).name)
             send2trash(file)
 
-    def process(self, parser, args):
+    def process(self, parser: ArgumentParser, args: Namespace):
         if args.backup:
             self.backup(args.backup)
         elif args.restore:
