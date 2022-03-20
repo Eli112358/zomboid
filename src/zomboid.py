@@ -25,6 +25,32 @@ def present(name):
     return type(name) is str and name != ''
 
 
+def get_args():
+    """
+    Set up an ArgumentParser and use it on sys.argv
+
+    :return: Parsed args
+    """
+    from argparse import ArgumentParser
+    from sys import argv
+
+    parser = ArgumentParser(description='Manage backups for Project Zomboid')
+    parser.add_argument('-t', '--type', choices=GAME_MODES.keys(), default=list(GAME_MODES.keys())[-1],
+                        help='Type of save game, required unless ran from within save type folder')
+    parser.add_argument('-n', '--name', default='',
+                        help='Name of save game, required unless ran from within save game folder')
+    cmd = parser.add_mutually_exclusive_group()
+    cmd.add_argument('-b', '--backup', nargs='?', const=True,
+                     help='Save a backup, default name is the current date-time')
+    cmd.add_argument('-r', '--restore', nargs='?', const=True,
+                     help='Restore from a backup, default is the most recent')
+    cmd.add_argument('-l', '--list', action=STORE_TRUE,
+                     help='List available backups, the default action')
+    cmd.add_argument('-c', '--clean', nargs='?', const=1, type=int,
+                     help='Clean up oldest backups, default is 1')
+    return parser.parse_args(argv[1:])
+
+
 @dataclass
 class Save:
     type: str
@@ -80,32 +106,6 @@ class Save:
             self.restore(args.restore)
         elif args.clean:
             self.clean(args.clean)
-
-
-def get_args():
-    """
-    Set up an ArgumentParser and use it on sys.argv
-
-    :return: Parsed args
-    """
-    from argparse import ArgumentParser
-    from sys import argv
-
-    parser = ArgumentParser(description='Manage backups for Project Zomboid')
-    parser.add_argument('-t', '--type', choices=GAME_MODES.keys(), default=list(GAME_MODES.keys())[-1],
-                        help='Type of save game, required unless ran from within save type folder')
-    parser.add_argument('-n', '--name', default='',
-                        help='Name of save game, required unless ran from within save game folder')
-    cmd = parser.add_mutually_exclusive_group()
-    cmd.add_argument('-b', '--backup', nargs='?', const=True,
-                     help='Save a backup, default name is the current date-time')
-    cmd.add_argument('-r', '--restore', nargs='?', const=True,
-                     help='Restore from a backup, default is the most recent')
-    cmd.add_argument('-l', '--list', action=STORE_TRUE,
-                     help='List available backups, the default action')
-    cmd.add_argument('-c', '--clean', nargs='?', const=1, type=int,
-                     help='Clean up oldest backups, default is 1')
-    return parser.parse_args(argv[1:])
 
 
 def list_backups():
