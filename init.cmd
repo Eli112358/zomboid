@@ -5,6 +5,7 @@ path %~dp0src;%path%
 pushd %userprofile%\Zomboid\Saves
 prompt ~\Zomboid$+$g
 cls
+echo Reminder: Don't forget to cd/pushd into the save game directory (or use -t and -n)
 call %~dp0venv\Scripts\activate
 exit/b
 :missing_venv
