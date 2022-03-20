@@ -81,16 +81,16 @@ class Save:
     def backup(self, name: str):
         zip_name = name if present(name) else datetime.now().strftime(BACKUP_FORMAT)
         zip_path = self.backups / zip_name
-        print('Creating backup:', zip_name, 'for', self)
+        print(f'Creating backup: {zip_name} for {self}')
         make_archive(str(zip_path), 'zip', self.dir)
 
     def restore(self, name: str):
         zip_path = self.backups / name if present(name) else Path(max(glob(str(self.backups / '*.zip')), key=getctime))
-        print('Restoring from:', zip_path.name, 'for', self)
+        print(f'Restoring from: {zip_path.name} for {self}')
         unpack_archive(zip_path, self.dir)
 
     def clean(self, count: int):
-        print(f'Cleaning oldest backups:', count, 'from', self)
+        print(f'Cleaning oldest backups: {count} from {self}')
         files = sorted(glob(str(self.backups / '*.zip')), key=getctime)
         if count >= len(files):
             count = len(files) - 1
@@ -101,7 +101,7 @@ class Save:
 
     def list(self):
         backups = listdir(self.backups)
-        print('Available backups for', self)
+        print(f'Available backups for {self}')
         for backup in backups:
             print(backup.strip('.zip'))
 
