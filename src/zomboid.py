@@ -20,7 +20,6 @@ GAME_MODES = {
     'c': 'Sandbox'
 }
 PATH_ERROR = 'Invalid path for save. Please either specify (-t -n) or enter folder (cd)'
-STORE_TRUE = 'store_true'
 
 
 def present(name: str) -> bool:
@@ -44,8 +43,8 @@ def get_args() -> tuple[ArgumentParser, Namespace]:
                      help='Save a backup, default name is the current date-time')
     cmd.add_argument('-r', '--restore', nargs='?', const=True,
                      help='Restore from a backup, default is the most recent')
-    cmd.add_argument('-l', '--list', action=STORE_TRUE,
-                     help='List available backups')
+    cmd.add_argument('-l', '--list', nargs='?', const=5, type=int,
+                     help='List available backups, default is 5 (-1=all)')
     cmd.add_argument('-c', '--clean', nargs='?', const=1, type=int,
                      help='Clean up oldest backups, default is 1')
     return parser, parser.parse_args(argv[1:])
@@ -99,11 +98,17 @@ class Save:
             print(Path(file).name)
             send2trash(file)
 
-    def list(self):
+    def list(self, count: int):
         backups = listdir(self.backups)
+        total = len(backups)
+        backups.reverse()
+        if count > 0:
+            backups = backups[:count]
         print(f'Available backups for {self}')
         for backup in backups:
             print(backup.strip('.zip'))
+        if count > 0:
+            print(f'And {total - count} more...')
 
     def process(self, parser: ArgumentParser, args: Namespace):
         if args.backup:
@@ -113,7 +118,7 @@ class Save:
         elif args.clean:
             self.clean(args.clean)
         elif args.list:
-            self.list()
+            self.list(args.list)
         else:
             parser.print_usage()
 
