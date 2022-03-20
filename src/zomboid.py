@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
-from os import getcwd
+from os import getcwd, listdir
 from os.path import getctime, exists
 from pathlib import Path
 from shutil import make_archive, unpack_archive
@@ -99,6 +99,12 @@ class Save:
             print(Path(file).name)
             send2trash(file)
 
+    def list(self):
+        backups = listdir(self.backups)
+        print('Available backups for', self)
+        for backup in backups:
+            print(backup.strip('.zip'))
+
     def process(self, parser: ArgumentParser, args: Namespace):
         if args.backup:
             self.backup(args.backup)
@@ -106,30 +112,22 @@ class Save:
             self.restore(args.restore)
         elif args.clean:
             self.clean(args.clean)
+        elif args.list:
+            self.list()
         else:
             parser.print_usage()
 
 
-def list_backups():
-    """
-    WIP
-    """
-    raise NotImplementedError
-
-
 def main():
     parser, args = get_args()
-    if args.list:
-        list_backups()
-    else:
-        try:
-            if present(args.name):
-                save = Save(GAME_MODES[args.type], args.name)
-            else:
-                save = Save.from_cwd()
-            save.process(parser, args)
-        except ValueError as ve:
-            print(ve)
+    try:
+        if present(args.name):
+            save = Save(GAME_MODES[args.type], args.name)
+        else:
+            save = Save.from_cwd()
+        save.process(parser, args)
+    except ValueError as ve:
+        print(ve)
 
 
 if __name__ == '__main__':
