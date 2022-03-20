@@ -1,4 +1,3 @@
-from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
@@ -8,6 +7,7 @@ from pathlib import Path
 from shutil import make_archive, unpack_archive
 from sys import argv
 
+from configargparse import ArgumentParser, Namespace
 from send2trash import send2trash
 
 BACKUP_FORMAT = '%Y-%m-%d-%H-%M'

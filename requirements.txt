@@ -1,1 +1,2 @@
+ConfigArgParse>=1.5.3
 Send2Trash>=1.8.0
