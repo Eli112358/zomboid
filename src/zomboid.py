@@ -100,15 +100,12 @@ class Save:
 
     def list(self, count: int):
         backups = listdir(self.backups)
-        total = len(backups)
         backups.reverse()
-        if count > 0:
-            backups = backups[:count]
         print(f'Available backups for {self}')
-        for backup in backups:
-            print(backup.strip('.zip'))
+        lines = [b.strip('.zip') for b in backups[:count if count > 0 else len(backups)]]
+        print(*lines, sep='\n')
         if count > 0:
-            print(f'And {total - count} more...')
+            print(f'And {len(backups) - count} more...')
 
     def process(self, parser: ArgumentParser, args: Namespace):
         if args.backup:
