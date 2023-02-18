@@ -20,6 +20,12 @@ GAME_MODES = {
     'c': 'Sandbox'
 }
 PATH_ERROR = 'Invalid path for save. Please either specify (-t -n) or enter folder (cd)'
+FUNCTIONS = [
+    'backup',
+    'clean',
+    'list',
+    'restore',
+]
 
 
 def present(name: str) -> bool:
@@ -77,18 +83,21 @@ class Save:
     def dir(self) -> Path:
         return GAME_FILES / 'saves' / self.type / self.name
 
-    def backup(self, name: str):
+    def backup(self, args: Namespace):
+        name = args.backup
         zip_name = name if present(name) else datetime.now().strftime(BACKUP_FORMAT)
         zip_path = self.backups / zip_name
         print(f'Creating backup: {zip_name} for {self}')
         make_archive(str(zip_path), 'zip', self.dir)
 
-    def restore(self, name: str):
+    def restore(self, args: Namespace):
+        name = args.restore
         zip_path = self.backups / name if present(name) else Path(max(glob(str(self.backups / '*.zip')), key=getctime))
         print(f'Restoring from: {zip_path.name} for {self}')
         unpack_archive(zip_path, self.dir)
 
-    def clean(self, count: int):
+    def clean(self, args: Namespace):
+        count = args.clean
         print(f'Cleaning oldest backups: {count} from {self}')
         files = sorted(glob(str(self.backups / '*.zip')), key=getctime)
         if count >= len(files):
@@ -98,35 +107,29 @@ class Save:
             print(Path(file).name)
             send2trash(file)
 
-    def list(self, count: int):
+    def list(self, args: Namespace):
+        count = args.list
         backups = listdir(self.backups)
         backups.reverse()
         print(f'Available backups for {self}')
         lines = [b.strip('.zip') for b in backups[:count if count > 0 else len(backups)]]
         print(*lines, sep='\n')
-        if count > 0:
-            print(f'And {len(backups) - count} more...')
+        if count <= 0:
+            return
+        print(f'And {len(backups) - count} more...')
 
     def process(self, parser: ArgumentParser, args: Namespace):
-        if args.backup:
-            self.backup(args.backup)
-        elif args.restore:
-            self.restore(args.restore)
-        elif args.clean:
-            self.clean(args.clean)
-        elif args.list:
-            self.list(args.list)
-        else:
-            parser.print_usage()
+        key = list(map(lambda item: item[0], filter(lambda item: item[1], args.__dict__.items())))[1]
+        if key not in FUNCTIONS:
+            return parser.print_usage()
+        func = getattr(self, key)
+        func(args)
 
 
 def main():
     parser, args = get_args()
     try:
-        if present(args.name):
-            save = Save(GAME_MODES[args.type], args.name)
-        else:
-            save = Save.from_cwd()
+        save = Save(GAME_MODES[args.type], args.name) if present(args.name) else Save.from_cwd()
         save.process(parser, args)
     except ValueError as ve:
         print(ve)
